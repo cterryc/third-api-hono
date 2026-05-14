@@ -141,4 +141,19 @@ app.post('/posts', async (c) => {
   // Simulamos la creación del post
 })
 
+app.get('/posts', async (c) => {
+  const db = drizzle(c.env.third_api_db)
+
+  try {
+    // Seleccionamos todos los posts de la tabla
+    const allPosts = await db.select().from(posts).all()
+    return c.json(allPosts)
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      console.error(e.message)
+    }
+    return c.json({ error: 'No se pudieron obtener los posts' }, 500)
+  }
+})
+
 export default app
