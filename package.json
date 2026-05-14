@@ -1,0 +1,19 @@
+{
+  "name": "third-api",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.18",
+    "install": "^0.13.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260511.1",
+    "drizzle-kit": "^0.31.10",
+    "wrangler": "^4.4.0"
+  }
+}
