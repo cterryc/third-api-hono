@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { drizzle } from 'drizzle-orm/d1'
 import { posts, users } from './db/schema'
+import { sql } from 'drizzle-orm'
 
 type Bindings = {
   third_api_db: D1Database
@@ -60,6 +61,50 @@ app.get('/users', async (c) => {
       console.error(e.message)
     }
     return c.json({ error: 'No se pudieron obtener los usuarios' }, 500)
+  }
+})
+
+app.post('/login', async (c) => {
+  const db = drizzle(c.env.third_api_db)
+  const { email, password } = await c.req.json()
+
+  if (!email || !password) {
+    return c.json({ error: 'Email y contraseña son requeridos' }, 400)
+  }
+
+  try {
+    // 1. Buscar al usuario por email
+    // .get() nos devuelve el primer resultado o undefined
+    const user = await db
+      .select()
+      .from(users)
+      .where(sql`${users.email} = ${email}`)
+      .get()
+
+    if (!user) {
+      return c.json({ error: 'Credenciales inválidas' }, 401)
+    }
+
+    // 2. Hashear la contraseña recibida para comparar
+    const hashedPasswordInput = await hashPassword(password)
+
+    // 3. Comparar hashes
+    if (hashedPasswordInput !== user.password) {
+      return c.json({ error: 'Credenciales inválidas' }, 401)
+    }
+
+    // 4. Si todo es correcto (Aquí podrías generar un JWT después)
+    return c.json({
+      message: 'Login exitoso',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+    })
+  } catch (e) {
+    console.error(e)
+    return c.json({ error: 'Error en el servidor' }, 500)
   }
 })
 
